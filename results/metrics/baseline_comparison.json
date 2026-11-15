@@ -1,0 +1,8 @@
+{
+  "hmm_accuracy": 0.5,
+  "baseline_accuracy": 0.5,
+  "hmm_macro_f1": 0.2222222222222222,
+  "baseline_macro_f1": 0.2222222222222222,
+  "improvement_acc": 0.0,
+  "improvement_f1": 0.0
+}

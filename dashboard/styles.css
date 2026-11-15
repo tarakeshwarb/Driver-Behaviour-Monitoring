@@ -1,0 +1,945 @@
+/* ==========================================================================
+   Driver Behaviour Telemetry Console — Clean Automotive Light Theme
+   Typography: Standard Modern Sans-Serif (Plus Jakarta Sans) everywhere.
+   No Monospace / Typewriter fonts. Tabular numbers for clean numeric layout.
+   Features:
+     - 1:1 Geometric Circle Donut Chart (Driving Behaviour Analysis)
+     - Roadway Ribbon with Vehicle Marker Gliding in Real-Time Playback
+     - Digital Cockpit Instrument Cluster HUD (Speed, Throttle/Brake, Cornering)
+     - Automotive Telemetry Iconography
+   ========================================================================== */
+
+:root {
+  --bg-app: #f8fafc;
+  --bg-panel: #ffffff;
+  --bg-element: #f1f5f9;
+  --bg-subtle: #e2e8f0;
+  --bg-hover: #e2e8f0;
+
+  --border-line: #e2e8f0;
+  --border-active: #2563eb;
+
+  --text-main: #0f172a;
+  --text-dim: #334155;
+  --text-muted: #64748b;
+
+  --color-accent: #0284c7;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-danger: #dc2626;
+
+  /* Donut Chart Colors matching reference image */
+  --donut-aggressive: #52c474;
+  --donut-braking: #f17a4a;
+  --donut-normal: #3b82f6;
+  --donut-turning: #f4cc4d;
+
+  /* Standard modern sans-serif everywhere — NO monospace */
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: var(--font-sans);
+
+  --radius-sharp: 6px;
+  --shadow-subtle: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 16px; /* +2px base size */
+  background-color: var(--bg-app);
+  color: var(--text-main);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+}
+
+/* Numerals with standard font but tabular spacing for clean alignment */
+.mono {
+  font-family: var(--font-sans) !important;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+  letter-spacing: -0.01em;
+}
+
+/* ==========================================================================
+   Header & Toolbar
+   ========================================================================== */
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 28px;
+  background-color: var(--bg-panel);
+  border-bottom: 1px solid var(--border-line);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-branding {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.car-badge-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sharp);
+  color: #2563eb;
+}
+
+.system-code {
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  background-color: var(--bg-element);
+  color: var(--color-accent);
+  border: 1px solid #cbd5e1;
+  padding: 5px 10px;
+  border-radius: var(--radius-sharp);
+  letter-spacing: 0.5px;
+}
+
+.system-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text-main);
+}
+
+.system-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.header-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.input-unit {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-unit label {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.form-select {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: var(--text-main);
+  padding: 7px 12px;
+  border-radius: var(--radius-sharp);
+  font-size: 0.92rem;
+  font-family: var(--font-sans);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.1s ease;
+}
+
+.form-select-sm {
+  padding: 5px 9px;
+  font-size: 0.88rem;
+  font-family: var(--font-sans);
+}
+
+.form-select:focus {
+  border-color: var(--border-active);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 16px;
+  border-radius: var(--radius-sharp);
+  font-size: 0.9rem;
+  font-weight: 700;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.1s ease;
+  letter-spacing: 0.3px;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}
+
+.btn-control {
+  background-color: #ffffff;
+  color: var(--text-main);
+  border-color: #cbd5e1;
+  padding: 6px 14px;
+  min-width: 70px;
+}
+
+.btn-control:hover {
+  background-color: var(--bg-hover);
+  border-color: #94a3b8;
+}
+
+.system-status {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+}
+
+.status-indicator-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-success);
+}
+
+.status-text {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+/* ==========================================================================
+   Workspace Layout
+   ========================================================================== */
+
+.console-workspace {
+  padding: 20px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-width: 1780px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  box-shadow: var(--shadow-subtle);
+  padding: 16px 18px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border-line);
+  padding-bottom: 10px;
+}
+
+.panel-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  color: var(--text-main);
+}
+
+.panel-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-weight: 400;
+}
+
+.panel-header-dots {
+  color: #94a3b8;
+  font-size: 1.3rem;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* ==========================================================================
+   KPI Telemetry Bar (Automotive Metrics)
+   ========================================================================== */
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 14px;
+}
+
+.kpi-panel {
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  box-shadow: var(--shadow-subtle);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.kpi-caption {
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kpi-icon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.kpi-metric {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+}
+
+.kpi-meta {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+}
+
+.state-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-sharp);
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.state-neutral { background-color: var(--bg-subtle); color: var(--text-dim); border: 1px solid #cbd5e1; }
+.state-normal { background-color: #ecfdf5; color: #047857; border: 1px solid #10b981; }
+.state-drowsy { background-color: #fffbeb; color: #b45309; border: 1px solid #f59e0b; }
+.state-aggressive { background-color: #fef2f2; color: #b91c1c; border: 1px solid #ef4444; }
+.state-low { background-color: #ecfdf5; color: #047857; }
+
+.text-success { color: var(--color-success); }
+.text-muted { color: var(--text-muted); }
+
+/* ==========================================================================
+   Driving Behaviour Analysis Card (True Circle Donut Chart) & Events Registry
+   ========================================================================== */
+
+.analysis-events-split {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 18px;
+}
+
+.behaviour-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Perfect 1:1 circular aspect ratio container */
+.donut-chart-container {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  margin: 10px auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Donut chart canvas is strictly 1:1 circle, never stretched into an oval */
+.donut-chart-container canvas {
+  width: 240px !important;
+  height: 240px !important;
+  max-width: 240px !important;
+  max-height: 240px !important;
+  aspect-ratio: 1 / 1 !important;
+  display: block;
+}
+
+.donut-legend {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-line);
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-aggressive { background-color: var(--donut-aggressive); }
+.dot-braking { background-color: var(--donut-braking); }
+.dot-normal { background-color: var(--donut-normal); }
+.dot-turning { background-color: var(--donut-turning); }
+
+/* Events Panel */
+.events-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+.counter-badge {
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-line);
+  color: var(--text-dim);
+  padding: 3px 8px;
+  border-radius: var(--radius-sharp);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.events-table-wrapper {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 295px;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  background-color: #ffffff;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.data-table th, .data-table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid var(--border-line);
+}
+
+.data-table th {
+  background-color: #f8fafc;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.data-table tbody tr {
+  cursor: pointer;
+  background-color: #ffffff;
+  transition: background-color 0.1s ease;
+}
+
+.data-table tbody tr:hover {
+  background-color: #f1f5f9;
+}
+
+.empty-notice {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 36px 12px;
+  font-size: 0.9rem;
+}
+
+.panel-footer-hint {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 10px;
+  font-family: var(--font-sans);
+}
+
+.sev-tag {
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: var(--radius-sharp);
+  font-family: var(--font-sans);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.sev-high { background-color: #fee2e2; color: #b91c1c; border: 1px solid #ef4444; }
+.sev-medium { background-color: #fef3c7; color: #b45309; border: 1px solid #f59e0b; }
+.sev-low { background-color: #e0f2fe; color: #0369a1; border: 1px solid #38bdf8; }
+
+/* ==========================================================================
+   Driving Event Timeline Panel (Roadway Track & Car Marker)
+   ========================================================================== */
+
+.timeline-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.timeline-legend-bar {
+  display: flex;
+  gap: 14px;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.legend-entry {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+}
+
+.swatch-normal { background-color: var(--color-success); }
+.swatch-drowsy { background-color: var(--color-warning); }
+.swatch-aggressive { background-color: var(--color-danger); }
+.swatch-event { background-color: #ffffff; border: 1px solid var(--color-danger); }
+
+/* State Timeline Container */
+.state-timeline-container {
+  background-color: #ffffff;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.timeline-meta-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+/* Roadway ribbon track with subtle highway lane marking */
+.state-ribbon-wrapper {
+  position: relative;
+  width: 100%;
+  height: 60px;
+  background-color: #f1f5f9;
+  border: 2px solid #cbd5e1;
+  border-radius: 8px;
+  overflow: visible;
+  cursor: pointer;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.state-ribbon-wrapper::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%);
+  background-image: linear-gradient(to right, #94a3b8 50%, rgba(255, 255, 255, 0) 0%);
+  background-position: top;
+  background-size: 16px 2px;
+  background-repeat: repeat-x;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#stateRibbonCanvas {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 6px;
+  display: block;
+}
+
+.timeline-playhead {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+  background-color: #2563eb;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: left 0.04s linear;
+  z-index: 15;
+}
+
+/* Vehicle playhead badge cruising across the timeline */
+.playhead-car-marker {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  background-color: #2563eb;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 8px rgba(37, 99, 235, 0.45);
+}
+
+.car-svg-icon {
+  width: 15px;
+  height: 15px;
+  fill: #ffffff;
+  display: block;
+}
+
+.events-marker-track {
+  position: relative;
+  width: 100%;
+  height: 24px;
+  margin-top: 3px;
+}
+
+.event-timeline-tick {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  font-family: var(--font-sans);
+  font-size: 0.72rem;
+  padding: 2px 5px;
+  border-radius: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  font-weight: 700;
+  transition: transform 0.1s ease;
+}
+
+.event-timeline-tick:hover {
+  transform: translateX(-50%) scale(1.1);
+  z-index: 10;
+}
+
+.event-tick-high {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #dc2626;
+}
+
+.event-tick-medium {
+  background-color: #fef3c7;
+  border: 1px solid #f59e0b;
+  color: #d97706;
+}
+
+.event-tick-low {
+  background-color: #e0f2fe;
+  border: 1px solid #0284c7;
+  color: #0284c7;
+}
+
+/* Replay Bar */
+.replay-bar {
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.replay-button-group {
+  display: flex;
+  gap: 8px;
+}
+
+.timeline-scrubber-unit {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.scrubber-slider {
+  flex: 1;
+  accent-color: #2563eb;
+  cursor: pointer;
+  height: 6px;
+}
+
+.scrubber-timestamp {
+  font-size: 0.9rem;
+  color: var(--text-dim);
+  min-width: 120px;
+}
+
+.rate-select-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.rate-select-unit label {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* In-Vehicle Instrument Cluster (Digital Cockpit HUD) */
+.telemetry-readout-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  padding: 12px 16px;
+}
+
+.readout-cell {
+  display: flex;
+  flex-direction: column;
+}
+
+.readout-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hud-icon {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.readout-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 2px;
+}
+
+.readout-value .unit {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.state-text-normal { color: #059669; }
+.state-text-drowsy { color: #d97706; }
+.state-text-aggressive { color: #dc2626; }
+
+/* ==========================================================================
+   Waveforms Section
+   ========================================================================= */
+
+.filter-btn-group {
+  display: flex;
+  gap: 6px;
+}
+
+.filter-btn {
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: var(--radius-sharp);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.filter-btn.active, .filter-btn:hover {
+  background-color: #0f172a;
+  color: #ffffff;
+  font-weight: 700;
+  border-color: #0f172a;
+}
+
+.waveforms-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.waveform-box {
+  background-color: #ffffff;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  padding: 10px 12px;
+  height: 205px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+}
+
+.waveform-caption {
+  font-size: 0.82rem;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+
+/* Scoped waveform canvas rule — does NOT distort circular charts */
+.waveform-box canvas {
+  width: 100% !important;
+  height: 165px !important;
+}
+
+/* ==========================================================================
+   Academic Verification Benchmarks
+   ========================================================================== */
+
+.meta-tag {
+  background-color: var(--bg-element);
+  border: 1px solid #cbd5e1;
+  color: var(--color-accent);
+  padding: 4px 10px;
+  border-radius: var(--radius-sharp);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.benchmarks-split {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 18px;
+}
+
+.sub-panel {
+  background-color: #ffffff;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sub-title {
+  font-size: 1.0rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sub-desc {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.table-scroll-container {
+  overflow-x: auto;
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+}
+
+.verification-callout {
+  background-color: #ecfdf5;
+  border: 1px solid #10b981;
+  padding: 8px 12px;
+  border-radius: var(--radius-sharp);
+  font-size: 0.85rem;
+  color: #047857;
+  text-align: center;
+  font-weight: 700;
+}
+
+.metric-tiles-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.metric-tile {
+  background-color: var(--bg-element);
+  border: 1px solid var(--border-line);
+  border-radius: var(--radius-sharp);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.tile-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.tile-val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.metric-footnote {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  border-left: 3px solid var(--color-accent);
+  padding-left: 10px;
+  margin-top: 6px;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .analysis-events-split, .waveforms-grid, .benchmarks-split {
+    grid-template-columns: 1fr;
+  }
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

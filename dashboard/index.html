@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Driver Behaviour Telemetry & Road Safety Monitoring Console</title>
+  
+  <!-- Clean Standard Modern Typography (No Monospace) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Automotive Light Telemetry Stylesheet with Cache Buster -->
+  <link rel="stylesheet" href="styles.css?v=3.1">
+</head>
+<body>
+
+  <!-- Top System Header -->
+  <header class="app-header">
+    <div class="header-branding">
+      <div class="car-badge-icon" title="Vehicle Telemetry System">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.5 2.8C2.1 10.7 2 11.3 2 12v4c0 .6.4 1 1 1h2"/>
+          <circle cx="7" cy="17" r="2"/>
+          <path d="M9 17h6"/>
+          <circle cx="17" cy="17" r="2"/>
+        </svg>
+      </div>
+      <div class="system-code">VEHICLE // DB-HMM-04</div>
+      <div class="header-titles">
+        <h1 class="system-title">Driver Behaviour & Safety Telemetry Monitor</h1>
+        <p class="system-sub">Gaussian HMM Sequential Inference • Log-Domain Viterbi Decoding • UAH-DriveSet</p>
+      </div>
+    </div>
+    
+    <div class="header-toolbar">
+      <div class="input-unit">
+        <label for="driverFilter">DRIVER FILTER</label>
+        <select id="driverFilter" class="form-select">
+          <option value="ALL">ALL DRIVERS (D1–D6)</option>
+          <option value="D1">DRIVER 1 (D1)</option>
+          <option value="D2">DRIVER 2 (D2)</option>
+          <option value="D3">DRIVER 3 (D3)</option>
+          <option value="D4">DRIVER 4 (D4)</option>
+          <option value="D5">DRIVER 5 (D5)</option>
+          <option value="D6">DRIVER 6 (D6)</option>
+        </select>
+      </div>
+
+      <div class="input-unit">
+        <label for="tripSelect">TELEMETRY RECORDING</label>
+        <select id="tripSelect" class="form-select">
+          <option value="">LOADING TRIPS...</option>
+        </select>
+      </div>
+
+      <button id="btnLoadTrip" class="btn btn-primary">
+        RUN INFERENCE
+      </button>
+
+      <div class="system-status">
+        <span class="status-indicator-dot"></span>
+        <span class="status-text">CORE ONLINE</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Telemetry Workspace -->
+  <main class="console-workspace">
+
+    <!-- KPI Telemetry Bar -->
+    <section class="kpi-grid">
+      <div class="kpi-panel">
+        <span class="kpi-caption">
+          <svg class="kpi-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="m14 14-4-4"/></svg>
+          DRIVE BEHAVIOUR
+        </span>
+        <div class="kpi-metric" id="kpiPredictedStyle">
+          <span class="state-pill state-neutral">STANDBY</span>
+        </div>
+        <span class="kpi-meta" id="kpiGroundTruth">REFERENCE LABEL: —</span>
+      </div>
+
+      <div class="kpi-panel">
+        <span class="kpi-caption">
+          <svg class="kpi-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          TRIP DURATION
+        </span>
+        <div class="kpi-metric mono" id="kpiDuration">00:00.0</div>
+        <span class="kpi-meta" id="kpiDistance">PROFILE: —</span>
+      </div>
+
+      <div class="kpi-panel">
+        <span class="kpi-caption">
+          <svg class="kpi-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          SAFETY EVENTS
+        </span>
+        <div class="kpi-metric mono" id="kpiEventsCount">0</div>
+        <span class="kpi-meta" id="kpiHighSeverity">0 HIGH-SEVERITY EVENTS</span>
+      </div>
+
+      <div class="kpi-panel">
+        <span class="kpi-caption">
+          <svg class="kpi-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          VEHICLE RISK SCORE
+        </span>
+        <div class="kpi-metric" id="kpiRiskScore">
+          <span class="state-pill state-low">LOW</span>
+        </div>
+        <span class="kpi-meta mono" id="kpiLogProb">SEQ LOG-LIKELIHOOD: —</span>
+      </div>
+
+      <div class="kpi-panel">
+        <span class="kpi-caption">
+          <svg class="kpi-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+          VITERBI ACCURACY
+        </span>
+        <div class="kpi-metric mono text-success" id="kpiViterbiAgreement">100.00%</div>
+        <span class="kpi-meta">EXACT PATH RECONSTRUCTION</span>
+      </div>
+    </section>
+
+    <!-- Driving Behaviour Analysis & Safety Event Registry Grid -->
+    <section class="analysis-events-split">
+      
+      <!-- Driving Behaviour Analysis Card (True Circle Donut Chart) -->
+      <div class="panel behaviour-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Driving Behaviour Analysis</h2>
+            <p class="panel-subtitle">Illustrative distribution of detected driving states.</p>
+          </div>
+          <div class="panel-header-dots" title="Vehicle Options">···</div>
+        </div>
+
+        <div class="donut-chart-container">
+          <canvas id="chartDonut"></canvas>
+        </div>
+
+        <div class="donut-legend">
+          <span class="legend-item"><span class="legend-dot dot-aggressive"></span> Aggressive</span>
+          <span class="legend-item"><span class="legend-dot dot-braking"></span> Braking</span>
+          <span class="legend-item"><span class="legend-dot dot-normal"></span> Normal</span>
+          <span class="legend-item"><span class="legend-dot dot-turning"></span> Turning</span>
+        </div>
+      </div>
+
+      <!-- Safety Event Registry Table -->
+      <div class="panel events-panel">
+        <div class="panel-header">
+          <div>
+            <h2 class="panel-title">Safety Event Registry</h2>
+            <p class="panel-subtitle">Chronological record of discrete vehicle manoeuvres.</p>
+          </div>
+          <span class="counter-badge mono" id="eventsCountBadge">0 DETECTED</span>
+        </div>
+
+        <div class="events-table-wrapper">
+          <table class="data-table" id="eventsDataTable">
+            <thead>
+              <tr>
+                <th>TIME</th>
+                <th>EVENT CLASSIFICATION</th>
+                <th>SEV</th>
+                <th>PEAK ax</th>
+                <th>PEAK ay</th>
+              </tr>
+            </thead>
+            <tbody id="eventsTableBody">
+              <tr>
+                <td colspan="5" class="empty-notice">Load a trip sequence to view detected events.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="panel-footer-hint">
+          Click any row in the registry to jump telemetry scrubber directly to event timestamp.
+        </div>
+      </div>
+    </section>
+
+    <!-- Driving Event Timeline (Road Strip Replay with Car Marker) -->
+    <section class="panel timeline-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Driving Event Timeline</h2>
+          <p class="panel-subtitle">Decoded Gaussian HMM sequential state progression and interactive trip playback.</p>
+        </div>
+        <div class="timeline-legend-bar">
+          <span class="legend-entry"><span class="legend-swatch swatch-normal"></span> NORMAL</span>
+          <span class="legend-entry"><span class="legend-swatch swatch-drowsy"></span> DROWSY</span>
+          <span class="legend-entry"><span class="legend-swatch swatch-aggressive"></span> AGGRESSIVE</span>
+          <span class="legend-entry"><span class="legend-swatch swatch-event"></span> DETECTED EVENT</span>
+        </div>
+      </div>
+
+      <!-- Road Strip with Vehicle Marker -->
+      <div class="state-timeline-container">
+        <div class="timeline-meta-bar">
+          <span class="mono">ROADWAY STATE SEQUENCE (T = 0.0s → <span id="timelineDurationLabel">0.0s</span>)</span>
+          <span class="mono text-muted">WINDOW: 3.0s | OVERLAP: 50%</span>
+        </div>
+        
+        <div class="state-ribbon-wrapper" id="stateRibbonWrapper" title="Click anywhere along the roadway to steer playback">
+          <canvas id="stateRibbonCanvas"></canvas>
+          <div id="statePlayhead" class="timeline-playhead">
+            <div class="playhead-car-marker" title="Vehicle Playhead Position">
+              <svg viewBox="0 0 24 24" class="car-svg-icon" fill="currentColor">
+                <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Event markers along the timeline -->
+        <div id="timelineEventsTrack" class="events-marker-track"></div>
+      </div>
+
+      <!-- Telemetry Sequence Scrubber & Replay Bar -->
+      <div class="replay-bar">
+        <div class="replay-button-group">
+          <button id="btnPlayPause" class="btn btn-control">
+            <span id="playIcon">PLAY</span>
+          </button>
+          <button id="btnRestart" class="btn btn-control">
+            RESET
+          </button>
+        </div>
+
+        <div class="timeline-scrubber-unit">
+          <input type="range" id="timeScrubber" min="0" max="100" value="0" step="0.1" class="scrubber-slider" title="Scrub Vehicle Position">
+          <div class="scrubber-timestamp mono">
+            <span id="currentTime">00:00.0</span> / <span id="totalTime">00:00.0</span>
+          </div>
+        </div>
+
+        <div class="rate-select-unit">
+          <label for="replaySpeed">SPEED</label>
+          <select id="replaySpeed" class="form-select form-select-sm">
+            <option value="1">1x</option>
+            <option value="2" selected>2x</option>
+            <option value="5">5x</option>
+            <option value="10">10x</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- In-Vehicle Instrument Cluster (Digital Cockpit HUD) -->
+      <div class="telemetry-readout-strip">
+        <div class="readout-cell">
+          <span class="readout-label">
+            <svg class="hud-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m14 14-4-4"/><circle cx="12" cy="12" r="2"/></svg>
+            SPEEDOMETER
+          </span>
+          <span class="readout-value mono" id="hudSpeed">0.0 <span class="unit">km/h</span></span>
+        </div>
+        <div class="readout-cell">
+          <span class="readout-label">
+            <svg class="hud-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M8 6l4-4 4 4M8 18l4 4 4-4"/></svg>
+            THROTTLE / BRAKE (ax)
+          </span>
+          <span class="readout-value mono" id="hudAx">0.000 <span class="unit">g</span></span>
+        </div>
+        <div class="readout-cell">
+          <span class="readout-label">
+            <svg class="hud-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20"/><path d="m15 9-6 6M9 9l6 6"/></svg>
+            CORNERING FORCE (ay)
+          </span>
+          <span class="readout-value mono" id="hudAy">0.000 <span class="unit">g</span></span>
+        </div>
+        <div class="readout-cell">
+          <span class="readout-label">
+            <svg class="hud-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 12 19 5"/></svg>
+            DRIVE STATE MODE
+          </span>
+          <span class="readout-value mono state-text-normal" id="hudState">NORMAL</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Telemetry Kinematic Curves -->
+    <section class="panel waveforms-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Synchronized Sensor Kinematics</h2>
+          <p class="panel-subtitle">Multi-channel vehicle inertial dynamics with physical manoeuvre thresholds.</p>
+        </div>
+        <div class="filter-btn-group">
+          <button class="filter-btn active" data-chart="all">ALL CHANNELS</button>
+          <button class="filter-btn" data-chart="accel">ACCELERATION (ax, ay)</button>
+          <button class="filter-btn" data-chart="jerk">JERK Jx(t)</button>
+          <button class="filter-btn" data-chart="speed">SPEED</button>
+        </div>
+      </div>
+
+      <div class="waveforms-grid">
+        <div class="waveform-box">
+          <div class="waveform-caption mono">LONGITUDINAL ACCELERATION ax [g] — Throttle (+0.045g) / Hard Brake (-0.080g)</div>
+          <canvas id="chartAx"></canvas>
+        </div>
+        <div class="waveform-box">
+          <div class="waveform-caption mono">LATERAL ACCELERATION ay [g] — Cornering Force Threshold (±0.060g)</div>
+          <canvas id="chartAy"></canvas>
+        </div>
+        <div class="waveform-box">
+          <div class="waveform-caption mono">LONGITUDINAL JERK Jx(t) = Δa / Δt [g/s] — Vehicle Manoeuvre Abruptness</div>
+          <canvas id="chartJerk"></canvas>
+        </div>
+        <div class="waveform-box">
+          <div class="waveform-caption mono">VEHICLE VELOCITY [km/h] — Road Speed Tracking</div>
+          <canvas id="chartSpeed"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- Academic Verification & Metric Benchmarks -->
+    <section class="panel benchmarks-panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Unit 4 Core Algorithm Verification & Academic Benchmarks</h2>
+          <p class="panel-subtitle">Comparison against hmmlearn reference decoder and empirical annotations.</p>
+        </div>
+        <span class="meta-tag mono">CRITERION: CUSTOM ALGORITHM IMPLEMENTATION</span>
+      </div>
+
+      <div class="benchmarks-split">
+        <!-- Viterbi vs Reference Benchmark Table -->
+        <div class="sub-panel">
+          <h3 class="sub-title">Custom Log-Space Viterbi vs hmmlearn decode() Benchmark</h3>
+          <p class="sub-desc">Tested across chronological test sequences with identical Gaussian emission parameters:</p>
+          <div class="table-scroll-container">
+            <table class="data-table" id="viterbiTable">
+              <thead>
+                <tr>
+                  <th>SEQUENCE</th>
+                  <th>LENGTH (T)</th>
+                  <th>CUSTOM TIME</th>
+                  <th>REF TIME</th>
+                  <th>PATH AGREEMENT</th>
+                  <th>DISCREPANCY (Δ log P*)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="6" class="empty-notice">Loading algorithmic benchmark data...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="verification-callout mono">
+            VERIFICATION RESULT: 100.00% EXACT SEQUENCE MATCH (Δ log P* = 0.0000)
+          </div>
+        </div>
+
+        <!-- Evaluation Metrics -->
+        <div class="sub-panel">
+          <h3 class="sub-title">Evaluation Metrics Summary</h3>
+          <p class="sub-desc">Evaluated against 154 empirical reference annotations in `EVENTS_INERTIAL.txt`:</p>
+          
+          <div class="metric-tiles-row">
+            <div class="metric-tile">
+              <span class="tile-label">EVENT RECALL</span>
+              <span class="tile-val mono" id="statRecall">55.84%</span>
+            </div>
+            <div class="metric-tile">
+              <span class="tile-label">CLASSIFICATION ACC</span>
+              <span class="tile-val mono" id="statAccuracy">50.00%</span>
+            </div>
+            <div class="metric-tile">
+              <span class="tile-label">MACRO F1</span>
+              <span class="tile-val mono" id="statMacroF1">0.222</span>
+            </div>
+            <div class="metric-tile">
+              <span class="tile-label">HMM STATES (K)</span>
+              <span class="tile-val mono">K = 4</span>
+            </div>
+          </div>
+
+          <div class="metric-footnote">
+            <strong>Methodology Note:</strong> Continuous observation vectors (3.0s windows, 22 kinematic dimensions) are decoded into temporal hidden states. A separate threshold-interpretation layer maps states to discrete driving safety events without data leakage across chronological boundaries.
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <!-- Application Client with Cache Buster -->
+  <script src="app.js?v=3.1"></script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Pytest / Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Raw dataset (3.3 GB — do not commit to Git)
+data/raw/UAH-DriveSet/*.mp4
+data/raw/UAH-DriveSet/*/*.mp4
+data/raw/UAH-DriveSet/*/*/*.mp4
+data/raw/*.zip
+data/raw/*.tar.gz
+
+# Cache & logs
+*.log
+.DS_Store
+Thumbs.db
+scratch/
+*~
+*.bak
+*.swp
+
