@@ -110,6 +110,7 @@ class PredictResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 @app.get("/health")
+@app.get("/healthz")
 def health():
     return {"status": "ok", "model_loaded": _model is not None}
 
