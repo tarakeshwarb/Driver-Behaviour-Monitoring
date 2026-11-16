@@ -574,6 +574,67 @@
       </div>
     </section>
 
+    <!-- Row 4: Research Figure Gallery (Direct from results/figures/) -->
+    <section class="panel">
+      <div class="panel-header">
+        <div>
+          <h2 class="panel-title">Empirical Research Plots & Model Figures</h2>
+          <p class="panel-subtitle">Visualizations generated during HMM training, cross-validation, and algorithmic evaluation.</p>
+        </div>
+        <span class="counter-badge mono">4 RESEARCH FIGURES</span>
+      </div>
+
+      <div class="figures-gallery-grid">
+        <!-- Figure 1: Confusion Matrix -->
+        <div class="figure-card">
+          <div class="figure-card-header">
+            <span class="figure-tag mono">FIGURE 1</span>
+            <span class="figure-name">Driving Behavior Confusion Matrix</span>
+          </div>
+          <div class="figure-img-wrapper">
+            <img src="/results/figures/confusion_matrix.png" alt="Driving Behavior Confusion Matrix" class="research-fig-img" loading="lazy">
+          </div>
+          <p class="figure-caption">Test set confusion matrix between Ground-Truth annotations and HMM predictions (Accuracy: 50.0%, Macro F1: 0.222).</p>
+        </div>
+
+        <!-- Figure 2: Hyperparameter Sweep -->
+        <div class="figure-card">
+          <div class="figure-card-header">
+            <span class="figure-tag mono">FIGURE 2</span>
+            <span class="figure-name">Hyperparameter Sweep (AIC / BIC / Accuracy)</span>
+          </div>
+          <div class="figure-img-wrapper">
+            <img src="/results/figures/hyperparameter_sweep.png" alt="Hyperparameter Sensitivity Sweep" class="research-fig-img" loading="lazy">
+          </div>
+          <p class="figure-caption">Validation accuracy, Akaike Information Criterion, and Bayesian Information Criterion across K=3, 4, 5 states.</p>
+        </div>
+
+        <!-- Figure 3: Sensor Correlation Heatmap -->
+        <div class="figure-card">
+          <div class="figure-card-header">
+            <span class="figure-tag mono">FIGURE 3</span>
+            <span class="figure-name">Sensor Feature Correlation Heatmap</span>
+          </div>
+          <div class="figure-img-wrapper">
+            <img src="/results/figures/feature_correlation_heatmap.png" alt="Sensor Feature Correlation Heatmap" class="research-fig-img" loading="lazy">
+          </div>
+          <p class="figure-caption">Cross-correlation across 22 kinematic and inertial dimensions extracted from 3.0s sliding windows.</p>
+        </div>
+
+        <!-- Figure 4: Viterbi Benchmark -->
+        <div class="figure-card">
+          <div class="figure-card-header">
+            <span class="figure-tag mono">FIGURE 4</span>
+            <span class="figure-name">Custom Viterbi vs hmmlearn decode()</span>
+          </div>
+          <div class="figure-img-wrapper">
+            <img src="/results/figures/viterbi_timing_comparison.png" alt="Viterbi Timing & Agreement Comparison" class="research-fig-img" loading="lazy">
+          </div>
+          <p class="figure-caption">Exact sequence match (100.0%) and latency benchmark across chronological test sequences.</p>
+        </div>
+      </div>
+    </section>
+
   </div>
   <!-- END PAGE 2 -->
 
