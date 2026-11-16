@@ -208,29 +208,75 @@ body {
   border-color: #94a3b8;
 }
 
-.system-status {
-  display: flex;
+/* Page Navigation Toggle Button (Replaces Core Online) */
+.btn-page-toggle {
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 6px 12px;
-  background-color: var(--bg-element);
-  border: 1px solid var(--border-line);
-  border-radius: var(--radius-sharp);
-}
-
-.status-indicator-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background-color: var(--color-success);
-}
-
-.status-text {
+  gap: 8px;
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  padding: 7px 16px;
   font-family: var(--font-sans);
-  font-size: 0.8rem;
-  color: var(--text-dim);
+  font-size: 0.88rem;
   font-weight: 700;
-  letter-spacing: 0.3px;
+  border-radius: var(--radius-sharp);
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-page-toggle:hover {
+  background-color: #dbeafe;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.btn-page-toggle.active {
+  background-color: #2563eb;
+  color: #ffffff;
+  border-color: #1d4ed8;
+  box-shadow: 0 1px 4px rgba(37, 99, 235, 0.3);
+}
+
+.page-view {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.page2-banner {
+  background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+  border: 1px solid var(--border-line);
+  padding: 16px 20px;
+}
+
+.banner-badge {
+  display: inline-block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #2563eb;
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+}
+
+.banner-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--text-main);
+  letter-spacing: -0.2px;
+}
+
+.banner-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-top: 3px;
 }
 
 /* ==========================================================================

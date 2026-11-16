@@ -17,7 +17,10 @@ const state = {
     jerk: null,
     speed: null,
     donut: null,
+    datasetDonut: null,
   },
+  currentPage: 'telemetry',
+  metricsData: null,
   replay: {
     isPlaying: false,
     timer: null,
@@ -45,6 +48,10 @@ const STATE_COLORS = {
 // DOM Elements
 // ---------------------------------------------------------------------------
 const els = {
+  btnTogglePage: document.getElementById('btnTogglePage'),
+  pageToggleLabel: document.getElementById('pageToggleLabel'),
+  viewTelemetry: document.getElementById('viewTelemetry'),
+  viewDatasetResults: document.getElementById('viewDatasetResults'),
   driverFilter: document.getElementById('driverFilter'),
   tripSelect: document.getElementById('tripSelect'),
   btnLoadTrip: document.getElementById('btnLoadTrip'),
@@ -74,10 +81,14 @@ const els = {
   stateRibbonCanvas: document.getElementById('stateRibbonCanvas'),
   statePlayhead: document.getElementById('statePlayhead'),
   timelineEventsTrack: document.getElementById('timelineEventsTrack'),
-  viterbiTable: document.getElementById('viterbiTable').querySelector('tbody'),
+  viterbiTable: document.getElementById('viterbiTable') ? document.getElementById('viterbiTable').querySelector('tbody') : null,
   statRecall: document.getElementById('statRecall'),
   statAccuracy: document.getElementById('statAccuracy'),
   statMacroF1: document.getElementById('statMacroF1'),
+  driverMatrixTableBody: document.getElementById('driverMatrixTableBody'),
+  classificationReportBody: document.getElementById('classificationReportBody'),
+  sweepTableBody: document.getElementById('sweepTableBody'),
+  chartDatasetDonut: document.getElementById('chartDatasetDonut'),
 };
 
 // ---------------------------------------------------------------------------
@@ -91,6 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function initEventListeners() {
+  if (els.btnTogglePage) {
+    els.btnTogglePage.addEventListener('click', togglePage);
+  }
   els.driverFilter.addEventListener('change', filterTripsByDriver);
   els.btnLoadTrip.addEventListener('click', onRunInferenceClicked);
   
@@ -162,13 +176,42 @@ function filterTripsByDriver() {
   }
 }
 
+function togglePage() {
+  if (state.currentPage === 'telemetry') {
+    state.currentPage = 'results';
+    if (els.viewTelemetry) els.viewTelemetry.style.display = 'none';
+    if (els.viewDatasetResults) els.viewDatasetResults.style.display = 'flex';
+    if (els.btnTogglePage) {
+      els.btnTogglePage.classList.add('active');
+      const icon = els.btnTogglePage.querySelector('.btn-toggle-icon');
+      if (icon) icon.textContent = '🚗';
+    }
+    if (els.pageToggleLabel) els.pageToggleLabel.textContent = 'TRIP TELEMETRY';
+    renderDatasetPage();
+  } else {
+    state.currentPage = 'telemetry';
+    if (els.viewDatasetResults) els.viewDatasetResults.style.display = 'none';
+    if (els.viewTelemetry) els.viewTelemetry.style.display = 'flex';
+    if (els.btnTogglePage) {
+      els.btnTogglePage.classList.remove('active');
+      const icon = els.btnTogglePage.querySelector('.btn-toggle-icon');
+      if (icon) icon.textContent = '📊';
+    }
+    if (els.pageToggleLabel) els.pageToggleLabel.textContent = 'DATASET RESULTS';
+  }
+}
+
 async function loadAcademicBenchmarks() {
   try {
     const res = await fetch('/metrics/all');
     const data = await res.json();
+    state.metricsData = data;
+
+    // Populate Page 2 tables
+    populateDatasetTables(data);
 
     // Populate Viterbi Benchmark Table
-    if (data.viterbi_comparison && data.viterbi_comparison.length > 0) {
+    if (data.viterbi_comparison && data.viterbi_comparison.length > 0 && els.viterbiTable) {
       els.viterbiTable.innerHTML = '';
       data.viterbi_comparison.forEach(r => {
         const tr = document.createElement('tr');
@@ -186,15 +229,133 @@ async function loadAcademicBenchmarks() {
 
     // Populate Metrics
     if (data.event_metrics) {
-      els.statRecall.textContent = `${(data.event_metrics.recall * 100).toFixed(2)}%`;
+      if (els.statRecall) els.statRecall.textContent = `${(data.event_metrics.recall * 100).toFixed(2)}%`;
+      const dsRecall = document.getElementById('dsStatRecall');
+      if (dsRecall) dsRecall.textContent = `${(data.event_metrics.recall * 100).toFixed(2)}%`;
     }
     if (data.baseline_comparison) {
-      els.statAccuracy.textContent = `${(data.baseline_comparison.hmm_accuracy * 100).toFixed(1)}%`;
-      els.statMacroF1.textContent = data.baseline_comparison.hmm_macro_f1.toFixed(3);
+      if (els.statAccuracy) els.statAccuracy.textContent = `${(data.baseline_comparison.hmm_accuracy * 100).toFixed(1)}%`;
+      if (els.statMacroF1) els.statMacroF1.textContent = data.baseline_comparison.hmm_macro_f1.toFixed(3);
     }
   } catch (err) {
     console.error('Failed to load benchmarks:', err);
   }
+}
+
+function populateDatasetTables(data) {
+  // 1. Driver Summary Matrix
+  if (data.driver_summary && els.driverMatrixTableBody) {
+    els.driverMatrixTableBody.innerHTML = '';
+    data.driver_summary.forEach(d => {
+      const normal = d.NORMAL || 0;
+      const drowsy = d.DROWSY || 0;
+      const aggressive = d.AGGRESSIVE || 0;
+      const total = normal + drowsy + aggressive;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td class="mono" style="font-weight: 700; color: #2563eb;">DRIVER ${d.driver}</td>
+        <td class="mono">${normal} trips</td>
+        <td class="mono" style="color: #d97706;">${drowsy} trips</td>
+        <td class="mono" style="color: #dc2626;">${aggressive} trips</td>
+        <td class="mono" style="font-weight: 700;">${total} TRIPS</td>
+        <td><span class="state-pill state-normal" style="font-size: 0.78rem;">SECONDARY + MOTORWAY</span></td>
+      `;
+      els.driverMatrixTableBody.appendChild(tr);
+    });
+  }
+
+  // 2. Classification Report Table
+  if (data.classification_report && els.classificationReportBody) {
+    els.classificationReportBody.innerHTML = '';
+    data.classification_report.forEach(r => {
+      const label = r["Unnamed: 0"] || r.label || 'CLASS';
+      const prec = typeof r.precision === 'number' ? (r.precision * 100).toFixed(1) + '%' : '—';
+      const rec = typeof r.recall === 'number' ? (r.recall * 100).toFixed(1) + '%' : '—';
+      const f1 = typeof r["f1-score"] === 'number' ? r["f1-score"].toFixed(3) : '—';
+      const supp = typeof r.support === 'number' ? Math.round(r.support) : '—';
+      const tr = document.createElement('tr');
+      const isHeader = label === 'accuracy' || label === 'macro avg' || label === 'weighted avg';
+      tr.innerHTML = `
+        <td class="mono" style="${isHeader ? 'font-weight: 700; color: #0f172a;' : 'font-weight: 600;'}">${label.toUpperCase()}</td>
+        <td class="mono">${prec}</td>
+        <td class="mono">${rec}</td>
+        <td class="mono" style="font-weight: 700; color: #2563eb;">${f1}</td>
+        <td class="mono">${supp}</td>
+      `;
+      els.classificationReportBody.appendChild(tr);
+    });
+  }
+
+  // 3. Hyperparameter Sweep Table
+  if (data.hyperparameter_sweep && els.sweepTableBody) {
+    els.sweepTableBody.innerHTML = '';
+    data.hyperparameter_sweep.forEach(s => {
+      const isSelected = s.n_states === 4;
+      const tr = document.createElement('tr');
+      if (isSelected) tr.style.backgroundColor = '#eff6ff';
+      tr.innerHTML = `
+        <td class="mono" style="font-weight: 700;">K = ${s.n_states} ${isSelected ? '<span class="state-pill state-normal" style="font-size: 0.72rem; padding: 1px 6px;">OPTIMAL</span>' : ''}</td>
+        <td class="mono">${s.ll_train.toFixed(2)}</td>
+        <td class="mono">${s.ll_val.toFixed(2)}</td>
+        <td class="mono" style="font-weight: 700; color: #047857;">${(s.accuracy * 100).toFixed(1)}%</td>
+        <td class="mono">${Math.round(s.aic).toLocaleString()}</td>
+        <td class="mono">${Math.round(s.bic).toLocaleString()}</td>
+      `;
+      els.sweepTableBody.appendChild(tr);
+    });
+  }
+}
+
+function renderDatasetPage() {
+  if (state.metricsData) {
+    populateDatasetTables(state.metricsData);
+  }
+  renderDatasetDonutChart();
+}
+
+function renderDatasetDonutChart() {
+  const canvasEl = document.getElementById('chartDatasetDonut');
+  if (!canvasEl) return;
+
+  if (state.charts.datasetDonut) {
+    state.charts.datasetDonut.destroy();
+    state.charts.datasetDonut = null;
+  }
+
+  const ctx = canvasEl.getContext('2d');
+  state.charts.datasetDonut = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Normal', 'Drowsy', 'Aggressive'],
+      datasets: [{
+        data: [17, 12, 11], // 40 trips: 42.5%, 30.0%, 27.5%
+        backgroundColor: ['#3b82f6', '#f17a4a', '#52c474'],
+        borderWidth: 2,
+        borderColor: '#ffffff',
+        hoverOffset: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      aspectRatio: 1,
+      cutout: '62%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
+          titleFont: { family: 'Plus Jakarta Sans', size: 12 },
+          callbacks: {
+            label: function(context) {
+              const total = 40;
+              const pct = ((context.raw / total) * 100).toFixed(1);
+              return ` ${context.label}: ${context.raw} trips (${pct}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
 }
 
 // ---------------------------------------------------------------------------

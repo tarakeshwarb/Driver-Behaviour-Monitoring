@@ -318,12 +318,38 @@ def get_all_metrics():
     if sweep_csv.exists():
         response["hyperparameter_sweep"] = pd.read_csv(sweep_csv).to_dict(orient="records")
 
+    driver_csv = METRICS_DIR / "driver_summary.csv"
+    if driver_csv.exists():
+        response["driver_summary"] = pd.read_csv(driver_csv).to_dict(orient="records")
+
+    dataset_csv = METRICS_DIR / "dataset_summary.csv"
+    if dataset_csv.exists():
+        df_ds = pd.read_csv(dataset_csv)
+        response["dataset_summary"] = {
+            "total_trips": int(len(df_ds)),
+            "total_duration_min": round(float(df_ds["duration_s"].sum() / 60), 1),
+            "total_drivers": int(df_ds["driver"].nunique()),
+            "total_ref_events": int(df_ds["n_ref_events"].sum()),
+            "trips": df_ds.to_dict(orient="records")
+        }
+
+    label_csv = METRICS_DIR / "label_distribution.csv"
+    if label_csv.exists():
+        df_lbl = pd.read_csv(label_csv, index_col=0)
+        # Reset index to have 'label' column
+        df_lbl = df_lbl.reset_index().rename(columns={"index": "label"})
+        response["label_distribution"] = df_lbl.to_dict(orient="records")
+
     return response
 
 
 # ---------------------------------------------------------------------------
-# Mount Static Dashboard at root "/"
+# Mount Static Figures & Dashboard
 # ---------------------------------------------------------------------------
+FIGURES_DIR = PROJECT_ROOT / "results" / "figures"
+if FIGURES_DIR.exists():
+    app.mount("/results/figures", StaticFiles(directory=str(FIGURES_DIR)), name="figures")
+
 DASHBOARD_DIR = PROJECT_ROOT / "dashboard"
 if DASHBOARD_DIR.exists():
     app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="static")
