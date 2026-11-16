@@ -352,6 +352,7 @@ if FIGURES_DIR.exists():
 
 DASHBOARD_DIR = PROJECT_ROOT / "dashboard"
 if DASHBOARD_DIR.exists():
+    app.mount("/dashboard", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="dashboard_alias")
     app.mount("/", StaticFiles(directory=str(DASHBOARD_DIR), html=True), name="static")
 
 if __name__ == "__main__":
